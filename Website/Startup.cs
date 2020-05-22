@@ -26,7 +26,7 @@ namespace Website
             services.AddSingleton<IUnitofWork, RepoSQLDBUnitofWork>();
             services.AddSingleton<IConnection, RepoSQLDBConnection>();
             services.AddSingleton<IAccount, Account>();
-            services.AddMvc(x => x.Filters.Add<SecurityController>());
+            services.AddScoped<SecurityController>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -35,7 +35,7 @@ namespace Website
                     Title = "Test API",
                     Description = "ASP.NET Core Web API"
                 });
-                //c.OperationFilter<AddRequiredHeaderParameter>();
+                c.OperationFilter<AddRequiredHeaderParameter>();
             });
             //services.AddCors(p => p.AddPolicy("CustomPolicy", x =>
             //{

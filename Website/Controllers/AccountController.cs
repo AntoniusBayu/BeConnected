@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Website.Controllers
+namespace Website
 {
     [Route("api/account")]
     [ApiController]
@@ -17,32 +17,34 @@ namespace Website.Controllers
         }
 
         [HttpPost, Route("registerUser")]
+        [ServiceFilter(typeof(SecurityController))]
         public IActionResult register(MasterUser data)
         {
             try
             {
-                _Account.RegisterUser(data);
+                var response = _Account.RegisterUser(data);
 
-                return ApiResponse(ApiResullt.Ok, SaveSuccessful);
+                return ApiResponse(ResponseMessageEnum.Success, response);
             }
             catch (Exception ex)
             {
-                return ApiResponse(ApiResullt.Failed);
+                return ApiResponse(ResponseMessageEnum.InternalServerError, new ApiResponseModel() { Message = GlobalErrorMessage });
             }
         }
 
         [HttpPost, Route("login")]
+        [ServiceFilter(typeof(SecurityController))]
         public IActionResult login(MasterUser data)
         {
             try
             {
-                _Account.Login(data);
+                var response = _Account.Login(data);
 
-                return ApiResponse(ApiResullt.Ok, SaveSuccessful);
+                return ApiResponse(ResponseMessageEnum.Success, response);
             }
             catch (Exception ex)
             {
-                return ApiResponse(ApiResullt.Failed);
+                return ApiResponse(ResponseMessageEnum.InternalServerError, new ApiResponseModel() { Message = GlobalErrorMessage });
             }
         }
     }

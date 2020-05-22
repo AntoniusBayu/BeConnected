@@ -172,5 +172,8 @@ namespace Business
             // Return decrypted string.   
             return plainText;
         }
+
+        //public static string HashingPassword(string password, string salt)
+        //{ }
     }
 }

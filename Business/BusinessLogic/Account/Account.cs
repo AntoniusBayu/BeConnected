@@ -1,13 +1,13 @@
 ﻿using DataAccess;
-using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace Business
 {
     public class Account : BaseBusinessLogic, IAccount
     {
         private IUnitofWork _uow { get; set; }
-        public Account(IUnitofWork uow, IConfiguration config) : base(config)
+        public Account(IUnitofWork uow)
         {
             _uow = uow;
         }
@@ -34,32 +34,46 @@ namespace Business
             }
         }
 
-        public bool Login(MasterUser data)
+        public ApiResponseModel Login(MasterUser data)
         {
+            var response = new ApiResponseModel();
+            var validations = new List<Validation>();
+
             _uow.OpenConnection(base.SQLDBConn);
 
-            var passPhrase = GetAppSettings("passPhrase");
-            var hashAlgorithm = GetAppSettings("hashAlgorithm");
-            var passwordIterations = GetAppSettings("passwordIterations");
-            var initVector = GetAppSettings("initVector");
-            var keySize = GetAppSettings("keySize");
+            var passPhrase = _uow.GetAppSettings("passPhrase");
+            var hashAlgorithm = _uow.GetAppSettings("hashAlgorithm");
+            var passwordIterations = _uow.GetAppSettings("passwordIterations");
+            var initVector = _uow.GetAppSettings("initVector");
+            var keySize = _uow.GetAppSettings("keySize");
 
             var currentData = new MasterUser();
             var UserRepository = new MasterUserRepository(_uow);
 
-            bool isValid = true;
-
             try
             {
                 currentData = UserRepository.GetSingleData(data);
-                currentData.Password = Helper.Decrypt(currentData.Password, passPhrase, currentData.PasswordSalt, hashAlgorithm, Convert.ToInt32(passwordIterations), initVector, Convert.ToInt32(keySize));
 
-                if (data.Password != currentData.Password)
+                if (currentData == null)
                 {
-                    isValid = false;
+                    validations.Add(new Validation() { Key = "Username", Value = "We could not find your username, make sure you input the right username" });
+                }
+                else
+                {
+                    currentData.Password = Helper.Decrypt(currentData.Password, passPhrase, currentData.PasswordSalt, hashAlgorithm, Convert.ToInt32(passwordIterations), initVector, Convert.ToInt32(keySize));
+
+                    if (data.Password != currentData.Password)
+                    {
+                        validations.Add(new Validation() { Key = "Password", Value = "Password is incorrect" });
+                    }
+                    else
+                    {
+                        response.Result = GetUserClaim(data);
+                    }
                 }
 
-                return isValid;
+                response.Validations = validations;
+                return response;
             }
             catch
             {
@@ -71,31 +85,50 @@ namespace Business
             }
         }
 
-        public void RegisterUser(MasterUser data)
+        public ApiResponseModel RegisterUser(MasterUser data)
         {
+            var response = new ApiResponseModel();
+            var validations = new List<Validation>();
+
             _uow.OpenConnection(base.SQLDBConn);
 
             var saltText = Guid.NewGuid().ToString();
-            var passPhrase = GetAppSettings("passPhrase");
-            var hashAlgorithm = GetAppSettings("hashAlgorithm");
-            var passwordIterations = GetAppSettings("passwordIterations");
-            var initVector = GetAppSettings("initVector");
-            var keySize = GetAppSettings("keySize");
+            var passPhrase = _uow.GetAppSettings("passPhrase");
+            var hashAlgorithm = _uow.GetAppSettings("hashAlgorithm");
+            var passwordIterations = _uow.GetAppSettings("passwordIterations");
+            var initVector = _uow.GetAppSettings("initVector");
+            var keySize = _uow.GetAppSettings("keySize");
 
+            var currentData = new MasterUser();
             var UserRepository = new MasterUserRepository(_uow);
 
             try
             {
-                data.PasswordSalt = saltText;
-                data.Password = Helper.Encrypt(data.Password, passPhrase, saltText, hashAlgorithm, Convert.ToInt32(passwordIterations), initVector, Convert.ToInt32(keySize));
-                data.IsActive = true;
-                data.PasswordExpiredDate = DateTime.Now.AddMonths(6);
+                currentData = UserRepository.GetSingleData(data);
 
-                _uow.BeginTransaction();
+                if (currentData != null)
+                {
+                    validations.Add(new Validation() { Key = "Username", Value = "Username already exists" });
+                }
+                else
+                {
+                    data.PasswordSalt = saltText;
+                    data.Password = Helper.Encrypt(data.Password, passPhrase, saltText, hashAlgorithm, Convert.ToInt32(passwordIterations), initVector, Convert.ToInt32(keySize));
+                    data.IsActive = true;
+                    data.PasswordExpiredDate = DateTime.Now.AddMonths(6);
 
-                UserRepository.Insert(data);
+                    _uow.BeginTransaction();
 
-                _uow.CommitTransaction();
+                    UserRepository.Insert(data);
+
+                    _uow.CommitTransaction();
+
+                    response.Message = "User has been registered successfully";
+                    response.Result = data;
+                }
+
+                response.Validations = validations;
+                return response;
             }
             catch
             {

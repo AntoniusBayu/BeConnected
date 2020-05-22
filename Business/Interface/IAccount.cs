@@ -4,8 +4,8 @@ namespace Business
 {
     public interface IAccount
     {
-        void RegisterUser(MasterUser data);
-        bool Login(MasterUser data);
+        ApiResponseModel RegisterUser(MasterUser data);
+        ApiResponseModel Login(MasterUser data);
         MasterUser GetUserClaim(MasterUser data);
     }
 }

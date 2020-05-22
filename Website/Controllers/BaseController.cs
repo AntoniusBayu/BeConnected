@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DataAccess;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Website.Controllers
+namespace Website
 {
     public abstract class BaseController : Controller
     {
@@ -15,18 +16,13 @@ namespace Website.Controllers
             Failed = 2
         }
 
-        protected virtual IActionResult ApiResponse(ApiResullt result, object data = null)
+        protected virtual IActionResult ApiResponse(ResponseMessageEnum code, ApiResponseModel model)
         {
             IActionResult response;
 
-            if (result == ApiResullt.Failed)
-            {
-                response = BadRequest(GlobalErrorMessage);
-            }
-            else
-            {
-                response = Ok(new { dataObject = data });
-            }
+            Response.StatusCode = (int)code;
+            response = ApiHelper.Response(code, result: model);
+
             return response;
         }
     }

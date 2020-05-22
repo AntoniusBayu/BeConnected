@@ -41,5 +41,10 @@ namespace DataAccess
                 _repodbConn._tran.Rollback();
             }
         }
+
+        public string GetAppSettings(string key)
+        {
+            return _repodbConn.GetAppSettings(key);
+        }
     }
 }
