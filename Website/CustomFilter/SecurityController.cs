@@ -36,7 +36,7 @@ namespace Website
                 {
                     var val = AuthToken.Split(".");
 
-                    if (val.Length == 0 || val.Length != 3)
+                    if (val.Length != int.Parse(_uow.GetAppSettings("TokenLength")))
                     {
                         validations.Add(new Validation() { Key = "Token", Value = "Incorrect Token Format" });
                     }
@@ -45,6 +45,8 @@ namespace Website
                         var UserToken = Helper.Decrypt(val[0], _uow.GetAppSettings("passPhrase"), _uow.GetAppSettings("SaltFixed"), _uow.GetAppSettings("hashAlgorithm"), int.Parse(_uow.GetAppSettings("passwordIterations")), _uow.GetAppSettings("initVector"), int.Parse(_uow.GetAppSettings("keySize")));
                         var IpAddress = Helper.Decrypt(val[1], _uow.GetAppSettings("passPhrase"), _uow.GetAppSettings("SaltFixed"), _uow.GetAppSettings("hashAlgorithm"), int.Parse(_uow.GetAppSettings("passwordIterations")), _uow.GetAppSettings("initVector"), int.Parse(_uow.GetAppSettings("keySize"))); ;
                         var ExecutedDate = Helper.Decrypt(val[2], _uow.GetAppSettings("passPhrase"), _uow.GetAppSettings("SaltFixed"), _uow.GetAppSettings("hashAlgorithm"), int.Parse(_uow.GetAppSettings("passwordIterations")), _uow.GetAppSettings("initVector"), int.Parse(_uow.GetAppSettings("keySize"))); ;
+
+                        //Full Token : MsJPOXWboRbZL0Z14auT8w==.X3M3Yl3MucZr+LXqJpS2aA==.7GgDQjrzTdLDVkw/2q6U3xYt3Kk7pKtWp1WHyMHhE3s=
 
                         //MsJPOXWboRbZL0Z14auT8w== --> Encrypt Tante Erni
                         if (UserToken != "tanteerni")

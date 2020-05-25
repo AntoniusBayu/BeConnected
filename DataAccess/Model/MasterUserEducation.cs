@@ -5,6 +5,7 @@ namespace DataAccess
     [Map("MasterUserEducation")]
     public class MasterUserEducation : BaseModel
     {
+        [Primary]
         public string EducationID { get; set; }
         public string UserID { get; set; }
         public string EducationAt { get; set; }

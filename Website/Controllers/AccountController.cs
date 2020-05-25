@@ -38,7 +38,8 @@ namespace Website
         {
             try
             {
-                var response = _Account.Login(data);
+                var ipAddress = HttpContext.Connection.RemoteIpAddress.ToString();
+                var response = _Account.Login(data, ipAddress);
 
                 return ApiResponse(ResponseMessageEnum.Success, response);
             }

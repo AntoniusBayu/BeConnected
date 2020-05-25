@@ -6,6 +6,7 @@ namespace DataAccess
     [Map("TrxListingJob")]
     public class TrxListingJob : BaseModel
     {
+        [Primary]
         public string JobID { get; set; }
         public string CompanyID { get; set; }
         public string Position { get; set; }

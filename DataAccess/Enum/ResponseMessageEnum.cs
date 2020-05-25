@@ -13,7 +13,7 @@ namespace DataAccess
         [Description("Bad Request")]
         BadRequest = 400,
         [Description("UnAuthorized")]
-        UnAuthorized = 404,
+        UnAuthorized = 401,
         [Description("Internal Server Error")]
         InternalServerError = 500
     }

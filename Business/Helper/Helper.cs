@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -7,6 +8,7 @@ namespace Business
 {
     public static class Helper
     {
+        private static Random random = new Random();
         public static string Encrypt
     (
         string plainText,
@@ -175,5 +177,12 @@ namespace Business
 
         //public static string HashingPassword(string password, string salt)
         //{ }
+
+        public static string GeneratedID(int length, string value)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return value + "-" + new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }

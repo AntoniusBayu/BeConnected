@@ -6,6 +6,7 @@ namespace DataAccess
     [Map("AuditLogin")]
     public class AuditLogin : BaseModel
     {
+        [Primary]
         public string LogID { get; set; }
         public string UserID { get; set; }
         public string UserKey { get; set; }
