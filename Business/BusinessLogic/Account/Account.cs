@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace Business
 {
@@ -42,13 +43,14 @@ namespace Business
 
             _uow.OpenConnection(base.SQLDBConn);
 
+            var SaltFixed = _uow.GetAppSettings("SaltFixed");
             var passPhrase = _uow.GetAppSettings("passPhrase");
             var hashAlgorithm = _uow.GetAppSettings("hashAlgorithm");
             var passwordIterations = _uow.GetAppSettings("passwordIterations");
             var initVector = _uow.GetAppSettings("initVector");
             var keySize = _uow.GetAppSettings("keySize");
 
-            var currentData = new MasterUser();
+            MasterUser currentData = new MasterUser();
             var UserRepository = new MasterUserRepository(_uow);
             var dataAudit = new AuditLogin();
             var AuthToken = string.Empty;
@@ -65,7 +67,7 @@ namespace Business
                 }
                 else
                 {
-                    currentData.Password = Helper.Decrypt(currentData.Password, passPhrase, currentData.PasswordSalt, hashAlgorithm, Convert.ToInt32(passwordIterations), initVector, Convert.ToInt32(keySize));
+                    data.Password = Helper.HashWithSalt(data.Password, currentData.PasswordSalt, SHA384.Create());
 
                     if (data.Password != currentData.Password)
                     {
@@ -77,8 +79,8 @@ namespace Business
                         dataAudit.IPAddress = ipAddress;
                         AuditLogin(ref dataAudit);
 
-                        UserKey = Helper.Encrypt(dataAudit.UserKey, _uow.GetAppSettings("passPhrase"), _uow.GetAppSettings("SaltFixed"), _uow.GetAppSettings("hashAlgorithm"), int.Parse(_uow.GetAppSettings("passwordIterations")), _uow.GetAppSettings("initVector"), int.Parse(_uow.GetAppSettings("keySize")));
-                        Ip = Helper.Encrypt(ipAddress, _uow.GetAppSettings("passPhrase"), _uow.GetAppSettings("SaltFixed"), _uow.GetAppSettings("hashAlgorithm"), int.Parse(_uow.GetAppSettings("passwordIterations")), _uow.GetAppSettings("initVector"), int.Parse(_uow.GetAppSettings("keySize")));
+                        UserKey = Helper.Encrypt(dataAudit.UserKey, passPhrase, SaltFixed, hashAlgorithm, int.Parse(passwordIterations), initVector, int.Parse(keySize));
+                        Ip = Helper.Encrypt(ipAddress, passPhrase, SaltFixed, hashAlgorithm, int.Parse(passwordIterations), initVector, int.Parse(keySize));
                         AuthToken = UserKey + "." + Ip;
 
                         response.Result = new { AuthToken, Masteruser = GetUserClaim(data) };
@@ -105,12 +107,7 @@ namespace Business
 
             _uow.OpenConnection(base.SQLDBConn);
 
-            var saltText = Guid.NewGuid().ToString();
-            var passPhrase = _uow.GetAppSettings("passPhrase");
-            var hashAlgorithm = _uow.GetAppSettings("hashAlgorithm");
-            var passwordIterations = _uow.GetAppSettings("passwordIterations");
-            var initVector = _uow.GetAppSettings("initVector");
-            var keySize = _uow.GetAppSettings("keySize");
+            var saltSize = _uow.GetAppSettings("SaltSize");
 
             var currentData = new MasterUser();
             var UserRepository = new MasterUserRepository(_uow);
@@ -126,8 +123,8 @@ namespace Business
                 else
                 {
                     data.UserID = Helper.GeneratedID(Convert.ToInt32(_uow.GetAppSettings("LengthRandomString")), data.UserName);
-                    data.PasswordSalt = saltText;
-                    data.Password = Helper.Encrypt(data.Password, passPhrase, saltText, hashAlgorithm, Convert.ToInt32(passwordIterations), initVector, Convert.ToInt32(keySize));
+                    data.PasswordSalt = Helper.GenerateRandomCryptographicKey(Convert.ToInt32(saltSize));
+                    data.Password = Helper.HashWithSalt(data.Password, data.PasswordSalt, SHA384.Create());
                     data.IsActive = true;
                     data.PasswordExpiredDate = DateTime.Now.AddMonths(6);
                     data.CreatedBy = data.UserID;

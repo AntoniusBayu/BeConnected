@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -175,8 +176,29 @@ namespace Business
             return plainText;
         }
 
-        //public static string HashingPassword(string password, string salt)
-        //{ }
+        public static string HashWithSalt(string password, string salt, HashAlgorithm hashAlgo)
+        {
+            byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
+            byte[] passwordAsBytes = Encoding.UTF8.GetBytes(password);
+            List<byte> passwordWithSaltBytes = new List<byte>();
+            passwordWithSaltBytes.AddRange(passwordAsBytes);
+            passwordWithSaltBytes.AddRange(saltBytes);
+            byte[] digestBytes = hashAlgo.ComputeHash(passwordWithSaltBytes.ToArray());
+            return Convert.ToBase64String(digestBytes);
+        }
+
+        public static string GenerateRandomCryptographicKey(int keyLength)
+        {
+            return Convert.ToBase64String(GenerateRandomCryptographicBytes(keyLength));
+        }
+
+        private static byte[] GenerateRandomCryptographicBytes(int keyLength)
+        {
+            RNGCryptoServiceProvider rngCryptoServiceProvider = new RNGCryptoServiceProvider();
+            byte[] randomBytes = new byte[keyLength];
+            rngCryptoServiceProvider.GetBytes(randomBytes);
+            return randomBytes;
+        }
 
         public static string GeneratedID(int length, string value)
         {
