@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -205,6 +206,16 @@ namespace Business
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return value + "-" + new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public static string JSONSerialize(object value)
+        {
+            return JsonConvert.SerializeObject(value);
+        }
+
+        public static T JSONDeserialize<T>(string value) where T : class
+        {
+            return JsonConvert.DeserializeObject<T>(value);
         }
     }
 }

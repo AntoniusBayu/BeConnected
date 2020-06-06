@@ -56,6 +56,7 @@ namespace Business
             var AuthToken = string.Empty;
             var UserKey = string.Empty;
             var Ip = string.Empty;
+            var UserClaimResult = string.Empty;
 
             try
             {
@@ -79,11 +80,23 @@ namespace Business
                         dataAudit.IPAddress = ipAddress;
                         AuditLogin(ref dataAudit);
 
+                        var userClaim = GetUserClaim(data);
+
+                        var obj = new UserClaim
+                        {
+                            UserID = dataAudit.UserID,
+                            UserEmail = userClaim.Email,
+                            UserName = userClaim.UserName,
+                            UserFullName = userClaim.FullName
+                        };
+
+                        UserClaimResult = Helper.Encrypt(Helper.JSONSerialize(obj), passPhrase, SaltFixed, hashAlgorithm, int.Parse(passwordIterations), initVector, int.Parse(keySize));
                         UserKey = Helper.Encrypt(dataAudit.UserKey, passPhrase, SaltFixed, hashAlgorithm, int.Parse(passwordIterations), initVector, int.Parse(keySize));
                         Ip = Helper.Encrypt(ipAddress, passPhrase, SaltFixed, hashAlgorithm, int.Parse(passwordIterations), initVector, int.Parse(keySize));
-                        AuthToken = UserKey + "." + Ip;
 
-                        response.Result = new { AuthToken, Masteruser = GetUserClaim(data) };
+                        AuthToken = UserClaimResult + "." + UserKey + "." + Ip;
+
+                        response.Result = new { AuthToken = AuthToken };
                     }
                 }
 

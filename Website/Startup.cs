@@ -26,7 +26,9 @@ namespace Website
             services.AddSingleton<IUnitofWork, RepoSQLDBUnitofWork>();
             services.AddSingleton<IConnection, RepoSQLDBConnection>();
             services.AddSingleton<IAccount, Account>();
+            services.AddSingleton<IMasterCompany, Company>();
             services.AddScoped<SecurityController>();
+            services.AddScoped<SecuredController>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
