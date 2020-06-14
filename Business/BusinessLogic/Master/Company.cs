@@ -71,5 +71,79 @@ namespace Business
                 _uow.Dispose();
             }
         }
+
+        public ApiResponseModel UpdateCompany(MasterCompany data)
+        {
+            var response = new ApiResponseModel();
+
+            _uow.OpenConnection(base.SQLDBConn);
+
+            var CompanyRepository = new MasterCompanyRepository(_uow);
+            var currentData = new MasterCompany();
+
+            try
+            {
+                currentData = CompanyRepository.GetSingleData(new MasterCompany { CompanyID = data.CompanyID });
+                currentData.CompanyName = data.CompanyName;
+                currentData.IsVerified = data.IsVerified;
+                currentData.ModifiedDate = DateTime.Now;
+
+                _uow.BeginTransaction();
+
+                CompanyRepository.Update(currentData);
+
+                _uow.CommitTransaction();
+
+                response.Message = "Company has been updated successfully";
+                response.Result = currentData;
+
+                return response;
+            }
+            catch
+            {
+                _uow.RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                _uow.Dispose();
+            }
+        }
+
+        public ApiResponseModel DeleteCompany(string CompanyID)
+        {
+            var response = new ApiResponseModel();
+
+            _uow.OpenConnection(base.SQLDBConn);
+
+            var CompanyRepository = new MasterCompanyRepository(_uow);
+            var currentData = new MasterCompany();
+
+            try
+            {
+                currentData = CompanyRepository.GetSingleData(new MasterCompany { CompanyID = CompanyID });
+                currentData.IsActive = false;
+
+                _uow.BeginTransaction();
+
+                CompanyRepository.Update(currentData);
+
+                _uow.CommitTransaction();
+
+                response.Message = "Company has been deleted successfully";
+                response.Result = currentData;
+
+                return response;
+            }
+            catch
+            {
+                _uow.RollbackTransaction();
+                throw;
+            }
+            finally
+            {
+                _uow.Dispose();
+            }
+        }
     }
 }

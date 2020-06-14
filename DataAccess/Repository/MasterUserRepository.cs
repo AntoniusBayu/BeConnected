@@ -11,7 +11,6 @@ namespace DataAccess
         public MasterUser GetSingleData(MasterUser param)
         {
             IDictionary<string, object> SQLparam = new Dictionary<string, object>();
-            MasterUser data = new MasterUser();
 
             string sqlQuery = base.QuerySelect();
 
@@ -21,8 +20,8 @@ namespace DataAccess
                 sqlQuery += " AND UserName = @UserName ";
             }
 
-            //SQLparam.Add("IsActive", param.IsActive);
-            //sqlQuery += " AND IsActive = @IsActive ";
+            SQLparam.Add("IsActive", param.IsActive);
+            sqlQuery += " AND IsActive = @IsActive ";
 
             return base.ReadByQuery(sqlQuery, SQLparam).FirstOrDefault();
         }

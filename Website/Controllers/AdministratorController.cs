@@ -46,5 +46,35 @@ namespace Website.Controllers
                 return ApiResponse(ResponseMessageEnum.InternalServerError, new ApiResponseModel() { Message = GlobalErrorMessage });
             }
         }
+
+        [HttpPut, Route("updateCompany")]
+        public IActionResult UpdateCompany(MasterCompany data)
+        {
+            try
+            {
+                var response = _Company.UpdateCompany(data);
+
+                return ApiResponse(ResponseMessageEnum.Success, response);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse(ResponseMessageEnum.InternalServerError, new ApiResponseModel() { Message = GlobalErrorMessage });
+            }
+        }
+
+        [HttpDelete, Route("deleteCompany/{id}")]
+        public IActionResult DeleteCompany(string id)
+        {
+            try
+            {
+                var response = _Company.DeleteCompany(id);
+
+                return ApiResponse(ResponseMessageEnum.Success, response);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse(ResponseMessageEnum.InternalServerError, new ApiResponseModel() { Message = GlobalErrorMessage });
+            }
+        }
     }
 }
